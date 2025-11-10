@@ -5,7 +5,7 @@ and a class for the 0D model itself.
 
 """
 
-from model_template import ops
+from ten_tusscher_panfilov_2006 import ops
 
 
 class Stimulation:
@@ -37,9 +37,9 @@ class Stimulation:
         return self.amplitude if self.t_start <= t < self.t_start + self.duration else 0.0
 
 
-class Model0D:
+class tenTusscherPanfilov20060D:
     """
-    Model OD implementation.
+    ten Tusscher-Panfilov 2006 OD implementation.
 
     Parameters
     ----------
