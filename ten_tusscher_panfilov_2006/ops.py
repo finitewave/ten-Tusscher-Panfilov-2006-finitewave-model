@@ -113,11 +113,38 @@ def get_parameters() -> dict[str, float]:
     }
 
 
-def calc_rhs() -> float:
+def calc_rhs(ikr, iks, ik1, ito, ina, ibna, ical, ibca, inak, inaca, ipca, ipk) -> float:
     """
     Computes the right-hand side of the model.
+
+    Parameters
+    ----------
+    ikr : float
+        Rapid delayed rectifier potassium current.
+    iks : float
+        Slow delayed rectifier potassium current.
+    ik1 : float
+        Inward rectifier potassium current.
+    ito : float
+        Transient outward potassium current.
+    ina : float
+        Fast sodium current.
+    ibna : float
+        Background sodium current.
+    ical : float
+        L-type calcium current.
+    ibca : float
+        Background calcium current.
+    inak : float
+        Sodium-potassium pump current.
+    inaca : float
+        Sodium-calcium exchanger current.
+    ipca : float
+        Calcium pump current.
+    ipk : float
+        Potassium pump current.
     """
-    raise NotImplementedError("The calc_rhs method must be implemented in a subclass.")
+    return ikr + iks + ik1 + ito + ina + ibna + ical + ibca + inak + inaca + ipca + ipk
 
 
 def calc_gating_variable_rush_larsen(x, x_inf, tau_x, dt, exp=math.exp):

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from implementation.model_0d import Model0D, Stimulation
+from implementation.ten_tusscher_panfilov_2006 import tenTusscherPanfilov20060D, Stimulation
 
 
 def prepare_model(model_class, dt, curr_dur, curr_value, t_prebeats):
@@ -77,7 +77,7 @@ def test_model_attributes():
     Test that the model has the expected attributes.
     Checks for the presence of key variables and parameters in the 0D Model.
     """
-    model = Model0D(dt=0.01, stimulations=[])
+    model = tenTusscherPanfilov20060D(dt=0.01, stimulations=[])
 
     assert 'u' in model.variables, "Model should have variable 'u'"
 
@@ -91,7 +91,7 @@ def test_model_run():
     t_prebeats = 1000.0 # interval between preconditioning stimuli (ms or model units).
     t_calc = 1000.0     # time after the last preconditioning beat to continue recording (ms or model units).
     t_max = 3*t_prebeats + t_calc
-    model = prepare_model(Model0D, dt=0.01, curr_dur=0.5, curr_value=5.0, t_prebeats=t_prebeats)
+    model = prepare_model(tenTusscherPanfilov20060D, dt=0.01, curr_dur=0.5, curr_value=5.0, t_prebeats=t_prebeats)
     model.run(t_max=t_max)
     u = np.array(model.history['u'])
 
