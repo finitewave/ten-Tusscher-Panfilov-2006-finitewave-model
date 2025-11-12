@@ -20,8 +20,8 @@ https://doi.org/10.1152/ajpheart.00109.2006
 __all__ = (
     "get_variables",
     "get_parameters",
-    "calc_rhs",  # add other calc_* functions as needed
-    # e.g. "calc_dv",
+    "calc_rhs",  
+
 )
 
 import math
@@ -120,31 +120,42 @@ def calc_rhs() -> float:
     raise NotImplementedError("The calc_rhs method must be implemented in a subclass.")
 
 
-def calc_ina(u, dt, m, h, j, gna, Ena, exp=math.exp):
+def calc_gating_variable_rush_larsen(x, x_inf, tau_x, dt, exp=math.exp):
     """
-    Calculates the fast sodium current.
+    Calculates the gating variable using the Rush-Larsen method.
 
     Parameters
     ----------
+    x : float
+        Current value of the gating variable.
+    x_inf : float
+        Steady-state value of the gating variable.
+    tau_x : float
+        Time constant for the gating variable (ms).
+    exp : callable
+        Exponential function to use (default: math.exp).
+    """
+    return x_inf - (x_inf - x)*exp(-dt/tau_x)
+
+def calc_gating_m(m, u, dt, exp=math.exp):
+    """
+    Calculates the gating variable m for the fast sodium current.
+
+    Parameters
+    ----------
+    m : np.ndarray
+        Current value of the gating variable m.
     u : np.ndarray
         Membrane potential array.
     dt : float
         Time step for the simulation.
-    m : np.ndarray
-        Gating variable for sodium channels (activation).
-    h : np.ndarray
-        Gating variable for sodium channels (inactivation).
-    j : np.ndarray
-        Gating variable for sodium channels (inactivation).
-    gna : float
-        Sodium conductance.
-    Ena : float
-        Sodium reversal potential.
+    exp : callable
+        Exponential function to use (default: math.exp).
 
     Returns
     -------
     np.ndarray
-        Updated fast sodium current array.
+        Updated gating variable m.
     """
 
     alpha_m = 1./(1.+exp((-60.-u)/5.))
@@ -153,6 +164,29 @@ def calc_ina(u, dt, m, h, j, gna, Ena, exp=math.exp):
     tau_m = alpha_m*beta_m
     m_inf = 1./((1.+exp((-56.86-u)/9.03))
                 * (1.+exp((-56.86-u)/9.03)))
+
+    return m_inf-(m_inf-m)*exp(-dt/tau_m)
+
+def calc_gating_h(h, u, dt, exp=math.exp):
+    """
+    Calculates the gating variable h for the fast sodium current.
+
+    Parameters
+    ----------
+    h : np.ndarray
+        Current value of the gating variable h.
+    u : np.ndarray
+        Membrane potential array.
+    dt : float
+        Time step for the simulation.
+    exp : callable
+        Exponential function to use (default: math.exp).
+
+    Returns
+    -------
+    np.ndarray
+        Updated gating variable h.
+    """
 
     alpha_h = 0.
     beta_h = 0.
@@ -167,6 +201,29 @@ def calc_ina(u, dt, m, h, j, gna, Ena, exp=math.exp):
 
     h_inf = 1./((1.+exp((u+71.55)/7.43))
                 * (1.+exp((u+71.55)/7.43)))
+
+    return h_inf-(h_inf-h)*exp(-dt/tau_h)
+
+def calc_gating_j(j, h_inf, u, dt, exp=math.exp):
+    """
+    Calculates the gating variable j for the fast sodium current.
+
+    Parameters
+    ----------
+    j : np.ndarray
+        Current value of the gating variable j.
+    u : np.ndarray
+        Membrane potential array.
+    dt : float
+        Time step for the simulation.
+    exp : callable
+        Exponential function to use (default: math.exp).
+
+    Returns
+    -------
+    np.ndarray
+        Updated gating variable j.
+    """
 
     alpha_j = 0.
     beta_j = 0.
@@ -184,11 +241,33 @@ def calc_ina(u, dt, m, h, j, gna, Ena, exp=math.exp):
 
     j_inf = h_inf
 
-    m = m_inf-(m_inf-m)*exp(-dt/tau_m)
-    h = h_inf-(h_inf-h)*exp(-dt/tau_h)
-    j = j_inf-(j_inf-j)*exp(-dt/tau_j)
+    return j_inf-(j_inf-j)*exp(-dt/tau_j)
 
-    return gna*m*m*m*h*j*(u-Ena), m, h, j
+def calc_ina(u, m, h, j, gna, Ena):
+    """
+    Calculates the fast sodium current.
+
+    Parameters
+    ----------
+    u : np.ndarray
+        Membrane potential array.
+    m : np.ndarray
+        Gating variable for sodium channels (activation).
+    h : np.ndarray
+        Gating variable for sodium channels (inactivation).
+    j : np.ndarray
+        Gating variable for sodium channels (inactivation).
+    gna : float
+        Sodium conductance.
+    Ena : float
+        Sodium reversal potential.
+
+    Returns
+    -------
+    np.ndarray
+        Updated fast sodium current array.
+    """
+    return gna*(m**3)*h*j*(u-Ena), m, h, j
 
 def calc_ical(u, dt, d, f, f2, fcass, cao, cass, gcal, F, R, T, exp=math.exp):
     """
@@ -244,10 +323,10 @@ def calc_ical(u, dt, d, f, f2, fcass, cao, cass, gcal, F, R, T, exp=math.exp):
     fcass_inf = 0.6/(1+(cass/0.05)*(cass/0.05))+0.4
     tau_fcass = 80./(1+(cass/0.05)*(cass/0.05))+2.
 
-    d = d_inf-(d_inf-d)*exp(-dt/tau_d)
-    f = f_inf-(f_inf-f)*exp(-dt/tau_f)
-    f2 = f2_inf-(f2_inf-f2)*exp(-dt/tau_f2)
-    fcass = fcass_inf-(fcass_inf-fcass)*exp(-dt/tau_fcass)
+    d = calc_gating_variable_rush_larsen(d, d_inf, tau_d, dt, exp)
+    f = calc_gating_variable_rush_larsen(f, f_inf, tau_f, dt, exp)
+    f2 = calc_gating_variable_rush_larsen(f2, f2_inf, tau_f2, dt, exp)
+    fcass = calc_gating_variable_rush_larsen(fcass, fcass_inf, tau_fcass, dt, exp)
 
     return gcal*d*f*f2*fcass*4*(u-15)*(F*F/(R*T)) *\
         (0.25*exp(2*(u-15)*F/(R*T))*cass-cao) / \
@@ -282,8 +361,8 @@ def calc_ito(u, dt, r, s, Ek, gto, exp=math.exp):
     tau_s = 85.*exp(-(u+45.)*(u+45.)/320.) + \
         5./(1.+exp((u-20.)/5.))+3.
 
-    s = s_inf-(s_inf-s)*exp(-dt/tau_s)
-    r = r_inf-(r_inf-r)*exp(-dt/tau_r)
+    s = calc_gating_variable_rush_larsen(s, s_inf, tau_s, dt, exp)
+    r = calc_gating_variable_rush_larsen(r, r_inf, tau_r, dt, exp)
 
     return gto*r*s*(u-Ek), r, s
 
@@ -321,8 +400,8 @@ def calc_ikr(u, dt, xr1, xr2, Ek, gkr, ko, exp=math.exp, sqrt=math.sqrt):
     bxr2 = 1.12/(1.+exp((u-60.)/20.))
     tau_xr2 = axr2*bxr2
 
-    xr1 = xr1_inf-(xr1_inf-xr1)*exp(-dt/tau_xr1)
-    xr2 = xr2_inf-(xr2_inf-xr2)*exp(-dt/tau_xr2)
+    xr1 = calc_gating_variable_rush_larsen(xr1, xr1_inf, tau_xr1, dt, exp)
+    xr2 = calc_gating_variable_rush_larsen(xr2, xr2_inf, tau_xr2, dt, exp)
 
     return gkr*sqrt(ko/5.4)*xr1*xr2*(u-Ek), xr1, xr2
 
@@ -354,7 +433,7 @@ def calc_iks(u, dt, xs, Eks, gks, exp=math.exp, sqrt=math.sqrt):
     tau_xs = Axs*Bxs+80
     xs_inf = 1./(1.+exp((-5.-u)/14.))
 
-    xs = xs_inf-(xs_inf-xs)*exp(-dt/tau_xs)
+    xs = calc_gating_variable_rush_larsen(xs, xs_inf, tau_xs, dt, exp)
 
     return gks*xs*xs*(u-Eks), xs
 
@@ -779,16 +858,14 @@ def calc_cai(dt, cai, bufc, Kbufc, ibca, ipca, inaca, iup, ileak, ixfer, capacit
                    (iup-ileak)*(vsr/vc)+ixfer)
     bc = bufc-CaCBuf-dCai-cai+Kbufc
     cc = Kbufc*(CaCBuf+dCai+cai)
-    return (sqrt(bc*bc+4*cc)-bc)/2, cai
+    return (sqrt(bc*bc+4*cc)-bc)/2
 
-def calc_nai(dt, ina, ibna, inak, inaca, capacitance, inverseVcF):
+def calc_dnai(ina, ibna, inak, inaca, capacitance, inverseVcF):
     """
     Calculates the sodium concentration in the cytosol.
 
     Parameters
     ----------
-    dt : float
-        Time step for the simulation.
     ina : float
         Fast sodium current.
     ibna : float
@@ -809,9 +886,9 @@ def calc_nai(dt, ina, ibna, inak, inaca, capacitance, inverseVcF):
     """
 
     dNai = -(ina+ibna+3*inak+3*inaca)*inverseVcF*capacitance
-    return dt*dNai
+    return dNai
 
-def calc_ki(dt, ik1, ito, ikr, iks, inak, ipk, inverseVcF, capacitance):
+def calc_dki(ik1, ito, ikr, iks, inak, ipk, inverseVcF, capacitance):
     """
     Calculates the potassium concentration in the cytosol.
 
@@ -841,4 +918,4 @@ def calc_ki(dt, ik1, ito, ikr, iks, inak, ipk, inverseVcF, capacitance):
     """
 
     dKi = -(ik1+ito+ikr+iks-2*inak+ipk)*inverseVcF*capacitance
-    return dt*dKi
+    return dKi
