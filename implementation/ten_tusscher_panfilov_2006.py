@@ -90,12 +90,12 @@ class tenTusscherPanfilov20060D:
         Ek = self.parameters["RTONF"]*(math.log((self.parameters["ko"]/self.variables["Ki"])))
         Ena = self.parameters["RTONF"]*(math.log((self.parameters["nao"]/self.variables["nai"])))
         
-        Eks = self.parameters["RTONF"]*(math.log((self.parameters["ko"]+self.parameters["pkNa"]*self.parameters["nao"])/(self.variables["Ki"]+self.parameters["pkNa"]*self.variables["nai"])))
+        Eks = self.parameters["RTONF"]*(math.log((self.parameters["ko"]+self.parameters["pKNa"]*self.parameters["nao"])/(self.variables["Ki"]+self.parameters["pKNa"]*self.variables["nai"])))
         Eca = 0.5*self.parameters["RTONF"]*(math.log((self.parameters["cao"]/self.variables["cai"])))
 
         # Compute currents
-        ina, self.variables["m"], self.variables["h"], self.variables["j_"] = ops.calc_ina(
-            self.variables["u"], self.dt, self.variables["m"], self.variables["h"], self.variables["j_"],
+        ina, self.variables["m"], self.variables["h"], self.variables["j"] = ops.calc_ina(
+            self.variables["u"], self.variables["m"], self.variables["h"], self.variables["j"],
             self.parameters["gna"], Ena)
         ical, self.variables["d"], self.variables["f"], self.variables["f2"], self.variables["fcass"] = ops.calc_ical(
             self.variables["u"], self.dt, self.variables["d"], self.variables["f"], self.variables["f2"],
@@ -119,6 +119,7 @@ class tenTusscherPanfilov20060D:
             self.parameters["n_"], self.parameters["F"],
             self.parameters["R"], self.parameters["T"])
         inak = ops.calc_inak(
+            self.variables["u"],
             self.variables["nai"], self.parameters["ko"],
             self.parameters["KmK"], self.parameters["KmNa"],
             self.parameters["knak"], self.parameters["F"],
@@ -164,7 +165,7 @@ class tenTusscherPanfilov20060D:
             self.parameters["CAPACITANCE"],
             self.parameters["Vc"], self.parameters["Vss"],
             self.parameters["Vsr"], inversevssF2)
-        self.variables["cai"], self.variables["cai"] = ops.calc_cai(
+        self.variables["cai"] = ops.calc_cai(
             self.dt, self.variables["cai"],
             self.parameters["Bufc"], self.parameters["Kbufc"],
             ibca, ipca, inaca, iup, ileak, ixfer,
@@ -189,7 +190,7 @@ class tenTusscherPanfilov20060D:
             ina, ibna,
             ical, ibca,
             inak, inaca,
-            ipca, ipk))
+            ipca, ipk) + sum(stim.stim(t=self.dt*i) for stim in self.stimulations))
 
     def run(self, t_max: float):
         """

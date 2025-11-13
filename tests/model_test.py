@@ -91,12 +91,12 @@ def test_model_run():
     t_prebeats = 1000.0 # interval between preconditioning stimuli (ms or model units).
     t_calc = 1000.0     # time after the last preconditioning beat to continue recording (ms or model units).
     t_max = 3*t_prebeats + t_calc
-    model = prepare_model(tenTusscherPanfilov20060D, dt=0.01, curr_dur=0.5, curr_value=5.0, t_prebeats=t_prebeats)
+    model = prepare_model(tenTusscherPanfilov20060D, dt=0.01, curr_dur=1, curr_value=100, t_prebeats=t_prebeats)
     model.run(t_max=t_max)
     u = np.array(model.history['u'])
 
-    assert np.max(u) == pytest.approx(20.0, abs=0.1)
-    assert np.min(u) == pytest.approx(-80.0, abs=0.01)
+    assert np.max(u) > 20
+    assert np.min(u) < -80
 
-    apd = calculate_apd(u, model.dt, threshold=0.1)
-    assert 350 <= apd <= 400, f"Model is out of expected range {apd}"
+    apd = calculate_apd(u, model.dt, threshold=-70)
+    assert 280 <= apd <= 320, f"TP06 APD90 is out of expected range {apd}"

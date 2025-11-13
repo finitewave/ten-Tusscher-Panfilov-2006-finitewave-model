@@ -8,13 +8,13 @@ and plots the membrane potential over time.
 import numpy as np
 import matplotlib.pyplot as plt
 
-from implementation import Model0D, Stimulation
+from implementation.ten_tusscher_panfilov_2006 import tenTusscherPanfilov20060D, Stimulation
 
 
-stimulations = [Stimulation(t_start=0.1, duration=0.2, amplitude=1.0)]
-t_max = 100.0
+stimulations = [Stimulation(t_start=0.1, duration=1, amplitude=100.0)]
+t_max = 400.0
 
-model = Model0D(dt=0.01, stimulations=stimulations)
+model = tenTusscherPanfilov20060D(dt=0.01, stimulations=stimulations)
 model.run(t_max=t_max)
 
 time = np.arange(0, t_max, model.dt)
