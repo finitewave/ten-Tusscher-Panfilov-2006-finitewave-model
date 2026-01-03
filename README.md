@@ -1,6 +1,6 @@
 ## ten Tusscher–Panfilov 2006 finitewave model
 
-Implements the ten Tusscher–Panfilov 2006 (TP06) human ventricular ionic model in 2D.
+Implements the ten Tusscher–Panfilov 2006 (TP06) human ventricular ionic model.
 
 The TP06 model is a detailed biophysical model of the human ventricular 
 action potential, designed to simulate realistic electrical behavior in 
