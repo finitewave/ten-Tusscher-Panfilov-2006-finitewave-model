@@ -21,7 +21,7 @@ classifiers = [
 dependencies = []
 
 [project.entry-points."finitewave.models"]
-model_template = "ten_tusscher_panfilov_2006.ops"
+ten_tusscher_panfilov_2006 = "ten_tusscher_panfilov_2006.ops"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ten_tusscher_panfilov_2006"]
