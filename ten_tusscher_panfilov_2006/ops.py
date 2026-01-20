@@ -21,7 +21,31 @@ __all__ = (
     "get_variables",
     "get_parameters",
     "calc_rhs",  
-
+    "calc_gating_variable_rush_larsen",
+    "calc_gating_m",
+    "calc_gating_h",
+    "calc_gating_j",
+    "calc_ina",
+    "calc_ical",
+    "calc_ito",
+    "calc_ikr",
+    "calc_iks",
+    "calc_ik1",
+    "calc_inaca",
+    "calc_inak",
+    "calc_ipca",
+    "calc_ipk",
+    "calc_ibna",
+    "calc_ibca",
+    "calc_irel",
+    "calc_ileak",
+    "calc_iup",
+    "calc_ixfer",
+    "calc_casr",
+    "calc_cass",
+    "calc_cai",
+    "calc_dnai",
+    "calc_dki"
 )
 
 import math
