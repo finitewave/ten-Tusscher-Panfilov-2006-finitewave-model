@@ -19,7 +19,7 @@ model.run(t_max=t_max)
 
 time = np.arange(0, t_max, model.dt)
 plt.plot(time, model.history['u'])
-plt.xlabel('Time (s)')
+plt.xlabel('Time (ms)')
 plt.ylabel('Membrane Potential (u)')
 plt.title('0D Model Simulation')
 plt.grid()
