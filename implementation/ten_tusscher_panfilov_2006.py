@@ -139,8 +139,8 @@ class tenTusscherPanfilov20060D:
         irel, self.variables["rr"], self.variables["oo"] = ops.calc_irel(
             self.dt, self.variables["rr"], self.variables["oo"],
             self.variables["casr"], self.variables["cass"],
-            self.parameters["Vrel"], self.parameters["k1_"],
-            self.parameters["k2_"], self.parameters["k3"],
+            self.parameters["Vrel"], self.parameters["k1"],
+            self.parameters["k2"], self.parameters["k3"],
             self.parameters["k4"], self.parameters["maxsr"],
             self.parameters["minsr"], self.parameters["EC"])
         ileak = ops.calc_ileak(
