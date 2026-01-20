@@ -253,7 +253,7 @@ def calc_gating_h(h, u, dt, exp=math.exp):
     h_inf = 1./((1.+exp((u+71.55)/7.43))
                 * (1.+exp((u+71.55)/7.43)))
 
-    return h_inf-(h_inf-h)*exp(-dt/tau_h)
+    return h_inf-(h_inf-h)*exp(-dt/tau_h), h_inf
 
 def calc_gating_j(j, h_inf, u, dt, exp=math.exp):
     """

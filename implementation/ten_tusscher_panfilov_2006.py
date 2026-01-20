@@ -93,6 +93,11 @@ class tenTusscherPanfilov20060D:
         Eks = self.parameters["RTONF"]*(math.log((self.parameters["ko"]+self.parameters["pKNa"]*self.parameters["nao"])/(self.variables["Ki"]+self.parameters["pKNa"]*self.variables["nai"])))
         Eca = 0.5*self.parameters["RTONF"]*(math.log((self.parameters["cao"]/self.variables["cai"])))
 
+        # Compute gates
+        self.variables["m"] = ops.calc_gating_m(self.variables["m"], self.variables["u"], self.dt)
+        self.variables["h"], h_inf = ops.calc_gating_h(self.variables["h"], self.variables["u"], self.dt)
+        self.variables["j"] = ops.calc_gating_j(self.variables["j"], h_inf, self.variables["u"], self.dt)
+
         # Compute currents
         ina, self.variables["m"], self.variables["h"], self.variables["j"] = ops.calc_ina(
             self.variables["u"], self.variables["m"], self.variables["h"], self.variables["j"],
