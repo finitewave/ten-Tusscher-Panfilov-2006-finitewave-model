@@ -3,8 +3,8 @@ requires = ["hatchling>=1.21.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ten-Tusscher-Panfilov-2006-finitewave-model"
-version = "0.1.0"
+name = "finitewave-model-ten-tusscher-panfilov-2006"
+version = "0.2.0"
 description = "ten Tusscher-Panfilov 2006 model."
 readme = "README.md"
 requires-python = ">=3.10"
