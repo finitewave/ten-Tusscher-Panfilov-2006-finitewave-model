@@ -318,7 +318,7 @@ def calc_ina(u, m, h, j, gna, Ena):
     np.ndarray
         Updated fast sodium current array.
     """
-    return gna*(m**3)*h*j*(u-Ena), m, h, j
+    return gna*(m**3)*h*j*(u-Ena)
 
 def calc_ical(u, dt, d, f, f2, fcass, cao, cass, gcal, F, R, T, exp=math.exp):
     """
