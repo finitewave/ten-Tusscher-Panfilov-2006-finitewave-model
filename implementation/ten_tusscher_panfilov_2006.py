@@ -119,38 +119,71 @@ class tenTusscherPanfilov20060D:
         )
         Eca = 0.5 * self.parameters["RTONF"] * math.log(self.parameters["cao"] / cai_old)
 
-        # Gating/state updates from old state
-        m_new = ops.calc_gating_m(m_old, u_old, self.dt)
-        h_new, h_inf = ops.calc_gating_h(h_old, u_old, self.dt)
-        j_new = ops.calc_gating_j(j_old, h_inf, u_old, self.dt)
-        
-        # calculating currents from old state and new gating/state variables
-        ina = ops.calc_ina(
-            u_old, m_old, h_old, j_old,
-            self.parameters["gna"], Ena
-        )
+        m_inf = ops.calc_m_inf(u_old)
+        tau_m = ops.calc_tau_m(u_old)
+        m_new = ops.calc_gating_variable_rush_larsen(m_old, m_inf, tau_m, self.dt)
 
-        ical, d_new, f_new, f2_new, fcass_new = ops.calc_ical(
-            u_old, self.dt, d_old, f_old, f2_old,
+        h_inf = ops.calc_h_inf(u_old)
+        tau_h = ops.calc_tau_h(u_old)
+        h_new = ops.calc_gating_variable_rush_larsen(h_old, h_inf, tau_h, self.dt)
+
+        j_inf = h_inf
+        tau_j = ops.calc_tau_j(u_old)
+        j_new = ops.calc_gating_variable_rush_larsen(j_old, j_inf, tau_j, self.dt)
+        
+        ina = ops.calc_ina(u_old, m_old, h_old, j_old, self.parameters["gna"], Ena)
+
+        d_inf = ops.calc_d_inf(u_old)
+        tau_d = ops.calc_tau_d(u_old)
+        d_new = ops.calc_gating_variable_rush_larsen(d_old, d_inf, tau_d, self.dt)
+
+        f_inf = ops.calc_f_inf(u_old)
+        tau_f = ops.calc_tau_f(u_old)
+        f_new = ops.calc_gating_variable_rush_larsen(f_old, f_inf, tau_f, self.dt)
+
+        f2_inf = ops.calc_f2_inf(u_old)
+        tau_f2 = ops.calc_tau_f2(u_old)
+        f2_new = ops.calc_gating_variable_rush_larsen(f2_old, f2_inf, tau_f2, self.dt)
+
+        fcass_inf = ops.calc_fcass_inf(cass_old)
+        tau_fcass = ops.calc_tau_fcass(cass_old)
+        fcass_new = ops.calc_gating_variable_rush_larsen(fcass_old, fcass_inf, tau_fcass, self.dt)
+
+        ical = ops.calc_ical(
+            u_old, d_old, f_old, f2_old,
             fcass_old, self.parameters["cao"], cass_old,
             self.parameters["gcal"], self.parameters["F"],
             self.parameters["R"], self.parameters["T"]
         )
 
-        ito, r_new, s_new = ops.calc_ito(
-            u_old, self.dt, r_old, s_old, Ek,
-            self.parameters["gto"]
-        )
+        r_inf = ops.calc_r_inf(u_old)
+        tau_r = ops.calc_tau_r(u_old)
+        r_new = ops.calc_gating_variable_rush_larsen(r_old, r_inf, tau_r, self.dt)
 
-        ikr, xr1_new, xr2_new = ops.calc_ikr(
-            u_old, self.dt, xr1_old, xr2_old, Ek,
+        s_inf = ops.calc_s_inf(u_old)
+        tau_s = ops.calc_tau_s(u_old)
+        s_new = ops.calc_gating_variable_rush_larsen(s_old, s_inf, tau_s, self.dt)
+
+        ito = ops.calc_ito(u_old, r_old, s_old, Ek, self.parameters["gto"])
+
+        xr1_inf = ops.calc_xr1_inf(u_old)
+        tau_xr1 = ops.calc_tau_xr1(u_old)
+        xr1_new = ops.calc_gating_variable_rush_larsen(xr1_old, xr1_inf, tau_xr1, self.dt)
+
+        xr2_inf = ops.calc_xr2_inf(u_old)
+        tau_xr2 = ops.calc_tau_xr2(u_old)
+        xr2_new = ops.calc_gating_variable_rush_larsen(xr2_old, xr2_inf, tau_xr2, self.dt)
+
+        ikr = ops.calc_ikr(
+            u_old, xr1_old, xr2_old, Ek,
             self.parameters["gkr"], self.parameters["ko"]
         )
 
-        iks, xs_new = ops.calc_iks(
-            u_old, self.dt, xs_old, Eks,
-            self.parameters["gks"]
-        )
+        xs_inf = ops.calc_xs_inf(u_old)
+        tau_xs = ops.calc_tau_xs(u_old)
+        xs_new = ops.calc_gating_variable_rush_larsen(xs_old, xs_inf, tau_xs, self.dt)
+
+        iks = ops.calc_iks(u_old, xs_old, Eks, self.parameters["gks"])
 
         ik1 = ops.calc_ik1(u_old, Ek, self.parameters["gk1"])
 
@@ -190,14 +223,19 @@ class tenTusscherPanfilov20060D:
             self.parameters["gbca"]
         )
 
-        irel, rr_new, oo_new = ops.calc_irel(
-            self.dt, rr_old, oo_old,
-            casr_old, cass_old,
-            self.parameters["Vrel"], self.parameters["k1"],
-            self.parameters["k2"], self.parameters["k3"],
-            self.parameters["k4"], self.parameters["maxsr"],
+        kCaSR = ops.calc_kCaSR(
+            casr_old, self.parameters["maxsr"], 
             self.parameters["minsr"], self.parameters["EC"]
         )
+        k1_ = self.parameters["k1"]/kCaSR
+        k2_ = self.parameters["k2"]*kCaSR
+        drr = self.parameters["k4"]*(1-rr_old)-k2_*cass_old*rr_old
+        rr_new = rr_old + self.dt*drr
+        oo_new = k1_*cass_old*cass_old * rr_old/(self.parameters["k3"]+k1_*cass_old*cass_old)
+
+        irel = ops.calc_irel(
+            oo_old, casr_old, cass_old,
+            self.parameters["Vrel"])
 
         ileak = ops.calc_ileak(
             casr_old, cai_old,
