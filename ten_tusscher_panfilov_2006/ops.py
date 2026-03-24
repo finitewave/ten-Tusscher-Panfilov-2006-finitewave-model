@@ -196,6 +196,101 @@ def calc_gating_variable_rush_larsen(x, x_inf, tau_x, dt, exp=math.exp):
     return x_inf - (x_inf - x)*exp(-dt/tau_x)
 
 
+def calc_Ek(ko, ki, RTONF):
+    """
+    Calculates the Nernst potential for potassium.
+
+    Parameters
+    ----------
+    ko : float
+        Extracellular potassium concentration.
+    ki : float
+        Intracellular potassium concentration.
+    RTONF : float
+        Gas constant times temperature divided by Faraday's constant.
+
+    Returns
+    -------
+    float
+        Nernst potential for potassium.
+    """
+
+    return RTONF * math.log(ko / ki)
+
+
+def calc_Ena(nao, nai, RTONF):
+    """
+    Calculates the Nernst potential for sodium.
+
+    Parameters
+    ----------
+    nao : float
+        Extracellular sodium concentration.
+    nai : float
+        Intracellular sodium concentration.
+    RTONF : float
+        Gas constant times temperature divided by Faraday's constant.
+
+    Returns
+    -------
+    float
+        Nernst potential for sodium.  
+    """
+
+    return RTONF * math.log(nao / nai)
+
+
+def calc_Eks(ko, ki, nao, nai, pKNa, RTONF):
+    """
+    Calculates the Nernst potential for the slow delayed rectifier potassium current.
+
+    Parameters
+    ----------
+    ko : float
+        Extracellular potassium concentration.
+    ki : float
+        Intracellular potassium concentration.
+    nao : float
+        Extracellular sodium concentration.
+    nai : float
+        Intracellular sodium concentration.
+    pKNa : float
+        Relative permeability of sodium to potassium for the slow delayed rectifier current.
+    RTONF : float
+        Gas constant times temperature divided by Faraday's constant.
+
+    Returns
+    -------
+    float
+        Nernst potential for the slow delayed rectifier potassium current.
+    """
+
+    return RTONF * math.log((ko + pKNa * nao) / (ki + pKNa * nai))
+
+
+def calc_Eca(cao, cai, RTONF):
+    """
+    Calculates the Nernst potential for calcium.
+
+    Parameters
+    ----------
+    cao : float
+        Extracellular calcium concentration.
+    cai : float
+        Intracellular calcium concentration.
+    RTONF : float
+        Gas constant times temperature divided by Faraday's constant.
+
+    Returns
+    -------
+    float
+        Nernst potential for calcium.
+    """
+    
+    return 0.5 * RTONF * math.log(cao / cai)
+
+
+
 def calc_m_inf(u, exp=math.exp):
     """
     Calculates the steady-state value of the gating variable m for the fast sodium current.

@@ -75,11 +75,11 @@ python -m pytest -q
 - `Vsr = 0.001094` - Sarcoplasmic reticulum volume  
 - `Vss = 0.00005468` - Subsarcolemmal space volume  
 - `Bufc = 0.2` - Cytoplasmic buffer concentration  
-- `Kbufc = 0.001` - Cytoplasmic buffer affinity  
+- `Kbufc = 0.001` - Cai half-saturation constant for cytoplasmic buffer
 - `Bufsr = 10.0` - SR buffer concentration  
-- `Kbufsr = 0.3` - SR buffer affinity  
+- `Kbufsr = 0.3` - CaSR half-saturation constant for sarcoplasmic buffer
 - `Bufss = 0.4` - Subsarcolemmal buffer concentration  
-- `Kbufss = 0.00025` - Subsarcolemmal buffer affinity  
+- `Kbufss = 0.00025` - CaSS half-saturation constant for subspace buffer
 - `Vmaxup = 0.006375` - Maximal calcium uptake rate  
 - `Kup = 0.00025` - Calcium uptake affinity  
 - `Vrel = 0.102` - Calcium release rate from SR  
@@ -88,8 +88,8 @@ python -m pytest -q
 - `k3 = 0.060` - Transition rate for SR calcium release  
 - `k4_ = 0.005` - Alternative transition rate  
 - `EC = 1.5` - Calcium-induced calcium release sensitivity  
-- `maxsr = 2.5` - Maximum SR calcium release permeability  
-- `minsr = 1.0` - Minimum SR calcium release permeability  
+- `maxsr = 2.5` - Maximum value of kcasr
+- `minsr = 1.0` - Minimum value of kcasr
 - `Vleak = 0.00036` - SR calcium leak rate  
 - `Vxfer = 0.0038` - Calcium transfer rate from subspace to cytosol  
 - `R = 8314.472` - Universal gas constant (J/(kmol·K))  

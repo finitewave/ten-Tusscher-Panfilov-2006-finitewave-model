@@ -110,14 +110,10 @@ class tenTusscherPanfilov20060D:
         nai_old = self.variables["nai"]
         ki_old = self.variables["Ki"]
 
-        # Reversal potentials from old state
-        Ek = self.parameters["RTONF"] * math.log(self.parameters["ko"] / ki_old)
-        Ena = self.parameters["RTONF"] * math.log(self.parameters["nao"] / nai_old)
-        Eks = self.parameters["RTONF"] * math.log(
-            (self.parameters["ko"] + self.parameters["pKNa"] * self.parameters["nao"])
-            / (ki_old + self.parameters["pKNa"] * nai_old)
-        )
-        Eca = 0.5 * self.parameters["RTONF"] * math.log(self.parameters["cao"] / cai_old)
+        Ek = ops.calc_Ek(self.parameters["ko"], ki_old, self.parameters["RTONF"])
+        Ena = ops.calc_Ena(self.parameters["nao"], nai_old, self.parameters["RTONF"])
+        Eks = ops.calc_Eks(self.parameters["ko"], ki_old, self.parameters["nao"], nai_old, self.parameters["pKNa"], self.parameters["RTONF"])
+        Eca = ops.calc_Eca(self.parameters["cao"], cai_old, self.parameters["RTONF"])
 
         m_inf = ops.calc_m_inf(u_old)
         tau_m = ops.calc_tau_m(u_old)
