@@ -21,14 +21,39 @@ __all__ = (
     "get_variables",
     "get_parameters",
     "calc_rhs",  
+    "calc_where",
     "calc_gating_variable_rush_larsen",
-    "calc_gating_m",
-    "calc_gating_h",
-    "calc_gating_j",
+    "calc_Ek",
+    "calc_Ena",
+    "calc_Eks",
+    "calc_Eca",
+    "calc_m_inf",
+    "calc_tau_m",
+    "calc_h_inf",
+    "calc_tau_h",
+    "calc_tau_j",
     "calc_ina",
+    "calc_tau_d",
+    "calc_d_inf",
+    "calc_tau_f",
+    "calc_f_inf",
+    "calc_tau_f2",
+    "calc_f2_inf",
+    "calc_tau_fcass",
+    "calc_fcass_inf",
     "calc_ical",
+    "calc_tau_r",
+    "calc_r_inf",
+    "calc_tau_s",
+    "calc_s_inf",
     "calc_ito",
+    "calc_xr1_inf",
+    "calc_tau_xr1",
+    "calc_xr2_inf",
+    "calc_tau_xr2",
     "calc_ikr",
+    "calc_xs_inf",
+    "calc_tau_xs",
     "calc_iks",
     "calc_ik1",
     "calc_inaca",
@@ -37,6 +62,7 @@ __all__ = (
     "calc_ipk",
     "calc_ibna",
     "calc_ibca",
+    "calc_kCaSR",
     "calc_irel",
     "calc_ileak",
     "calc_iup",
@@ -48,7 +74,7 @@ __all__ = (
     "calc_dki"
 )
 
-import math
+from math import exp, log, sqrt
 
 
 def get_variables() -> dict[str, float]:
@@ -177,7 +203,7 @@ def calc_where(cond, x, y):
     return y
 
 
-def calc_gating_variable_rush_larsen(x, x_inf, tau_x, dt, exp=math.exp):
+def calc_gating_variable_rush_larsen(x, x_inf, tau_x, dt):
     """
     Calculates the gating variable using the Rush-Larsen method.
 
@@ -189,8 +215,6 @@ def calc_gating_variable_rush_larsen(x, x_inf, tau_x, dt, exp=math.exp):
         Steady-state value of the gating variable.
     tau_x : float
         Time constant for the gating variable (ms).
-    exp : callable
-        Exponential function to use (default: math.exp).
     """
 
     return x_inf - (x_inf - x)*exp(-dt/tau_x)
@@ -215,7 +239,7 @@ def calc_Ek(ko, ki, RTONF):
         Nernst potential for potassium.
     """
 
-    return RTONF * math.log(ko / ki)
+    return RTONF * log(ko / ki)
 
 
 def calc_Ena(nao, nai, RTONF):
@@ -237,7 +261,7 @@ def calc_Ena(nao, nai, RTONF):
         Nernst potential for sodium.  
     """
 
-    return RTONF * math.log(nao / nai)
+    return RTONF * log(nao / nai)
 
 
 def calc_Eks(ko, ki, nao, nai, pKNa, RTONF):
@@ -265,7 +289,7 @@ def calc_Eks(ko, ki, nao, nai, pKNa, RTONF):
         Nernst potential for the slow delayed rectifier potassium current.
     """
 
-    return RTONF * math.log((ko + pKNa * nao) / (ki + pKNa * nai))
+    return RTONF * log((ko + pKNa * nao) / (ki + pKNa * nai))
 
 
 def calc_Eca(cao, cai, RTONF):
@@ -287,11 +311,11 @@ def calc_Eca(cao, cai, RTONF):
         Nernst potential for calcium.
     """
     
-    return 0.5 * RTONF * math.log(cao / cai)
+    return 0.5 * RTONF * log(cao / cai)
 
 
 
-def calc_m_inf(u, exp=math.exp):
+def calc_m_inf(u):
     """
     Calculates the steady-state value of the gating variable m for the fast sodium current.
 
@@ -299,8 +323,6 @@ def calc_m_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -313,7 +335,7 @@ def calc_m_inf(u, exp=math.exp):
     return m_inf
 
 
-def calc_tau_m(u, exp=math.exp):
+def calc_tau_m(u):
     """
     Calculates the time constant for the gating variable m for the fast sodium current.
 
@@ -321,8 +343,6 @@ def calc_tau_m(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -337,7 +357,7 @@ def calc_tau_m(u, exp=math.exp):
     return tau_m
 
 
-def calc_h_inf(u, exp=math.exp, where=calc_where):
+def calc_h_inf(u):
     """
     Calculates the steady-state value of the gating variable h for the fast sodium current.
 
@@ -345,10 +365,6 @@ def calc_h_inf(u, exp=math.exp, where=calc_where):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
-    where : callable
-        Function to use for conditional logic (default: calc_where).
 
     Returns
     -------
@@ -361,7 +377,7 @@ def calc_h_inf(u, exp=math.exp, where=calc_where):
     return h_inf
 
 
-def calc_tau_h(u, exp=math.exp, where=calc_where):
+def calc_tau_h(u):
     """
     Calculates the time constant for the gating variable h for the fast sodium current.
 
@@ -369,10 +385,6 @@ def calc_tau_h(u, exp=math.exp, where=calc_where):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
-    where : callable
-        Function to use for conditional logic (default: calc_where).
 
     Returns
     -------
@@ -380,15 +392,15 @@ def calc_tau_h(u, exp=math.exp, where=calc_where):
         Time constant for the gating variable h.
     """
 
-    alpha_h = where(u >= -40., 0, 0.057*exp(-(u+80.)/6.8))
-    beta_h = where(u >= -40., 0.77/(0.13*(1.+exp(-(u+10.66)/11.1))),
+    alpha_h = calc_where(u >= -40., 0, 0.057*exp(-(u+80.)/6.8))
+    beta_h = calc_where(u >= -40., 0.77/(0.13*(1.+exp(-(u+10.66)/11.1))),
                     2.7*exp(0.079*u)+(3.1e5)*exp(0.3485*u))
 
     tau_h = 1.0/(alpha_h + beta_h)
     return tau_h
 
 
-def calc_tau_j(u, exp=math.exp, where=calc_where):
+def calc_tau_j(u):
     """
     Calculates the time constant for the gating variable j for the fast sodium current.
 
@@ -396,10 +408,6 @@ def calc_tau_j(u, exp=math.exp, where=calc_where):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
-    where : callable
-        Function to use for conditional logic (default: calc_where).
 
     Returns
     -------
@@ -407,9 +415,9 @@ def calc_tau_j(u, exp=math.exp, where=calc_where):
         Time constant for the gating variable j.
     """
 
-    alpha_j = where(u >= -40., 0, (-127140*exp(0.2444*u) - 3.474e-5*exp(-0.04391*u)) * \
+    alpha_j = calc_where(u >= -40., 0, (-127140*exp(0.2444*u) - 3.474e-5*exp(-0.04391*u)) * \
                     (u+37.78) / (1+exp(0.311*(u+79.23))))
-    beta_j = where(u >= -40., 0.6*exp(-2.535e-7*u) / (1+exp(-0.1*(u+32))),
+    beta_j = calc_where(u >= -40., 0.6*exp(-2.535e-7*u) / (1+exp(-0.1*(u+32))),
                     0.02424*exp(-0.01052*u) / (1+exp(-0.1378*(u+40.14))))
 
     tau_j = 1.0/(alpha_j + beta_j)
@@ -444,7 +452,7 @@ def calc_ina(u, m, h, j, gna, Ena):
     return gna*(m**3)*h*j*(u-Ena)
 
 
-def calc_tau_d(u, exp=math.exp):
+def calc_tau_d(u):
     """ 
     Calculates the time constant for the gating variable d for the L-type calcium current.
 
@@ -452,8 +460,6 @@ def calc_tau_d(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -468,7 +474,7 @@ def calc_tau_d(u, exp=math.exp):
     return tau_d
 
 
-def calc_d_inf(u, exp=math.exp):
+def calc_d_inf(u):
     """
     Calculates the steady-state value of the gating variable d for the L-type calcium current.
 
@@ -476,8 +482,6 @@ def calc_d_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -489,15 +493,13 @@ def calc_d_inf(u, exp=math.exp):
     return d_inf
 
 
-def calc_tau_f(u, exp=math.exp):
+def calc_tau_f(u):
     """
     Calculates the time constant for the gating variable f for the L-type calcium current.
     Parameters
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -512,7 +514,7 @@ def calc_tau_f(u, exp=math.exp):
     return tau_f
 
 
-def calc_f_inf(u, exp=math.exp):
+def calc_f_inf(u):
     """
     Calculates the steady-state value of the gating variable f for the L-type calcium current.
 
@@ -520,8 +522,6 @@ def calc_f_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -533,7 +533,7 @@ def calc_f_inf(u, exp=math.exp):
     return f_inf
 
 
-def calc_tau_f2(u, exp=math.exp):
+def calc_tau_f2(u):
     """
     Calculates the time constant for the secondary gating variable f2 for the L-type calcium current.
 
@@ -541,8 +541,6 @@ def calc_tau_f2(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -557,7 +555,7 @@ def calc_tau_f2(u, exp=math.exp):
     return tau_f2
 
 
-def calc_f2_inf(u, exp=math.exp):
+def calc_f2_inf(u):
     """
     Calculates the steady-state value of the secondary gating variable f2 for the L-type calcium current.
     
@@ -565,8 +563,6 @@ def calc_f2_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -616,7 +612,7 @@ def calc_fcass_inf(cass):
     return fcass_inf
 
 
-def calc_ical(u, d, f, f2, fcass, cao, cass, gcal, F, R, T, exp=math.exp):
+def calc_ical(u, d, f, f2, fcass, cao, cass, gcal, F, R, T):
     """
     Calculates the L-type calcium current.
     
@@ -655,15 +651,13 @@ def calc_ical(u, d, f, f2, fcass, cao, cass, gcal, F, R, T, exp=math.exp):
         (exp(2*(u-15)*F/(R*T))-1.)
 
 
-def calc_tau_r(u, exp=math.exp):
+def calc_tau_r(u):
     """Calculates the time constant for the gating variable r for the transient outward potassium current.
     
     Parameters
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -675,15 +669,13 @@ def calc_tau_r(u, exp=math.exp):
     return tau_r
 
 
-def calc_r_inf(u, exp=math.exp):
+def calc_r_inf(u):
     """Calculates the steady-state value of the gating variable r for the transient outward potassium current.
     
     Parameters
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -695,15 +687,13 @@ def calc_r_inf(u, exp=math.exp):
     return r_inf
 
 
-def calc_tau_s(u, exp=math.exp):
+def calc_tau_s(u):
     """Calculates the time constant for the gating variable s for the transient outward potassium current.
     
     Parameters
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -715,15 +705,13 @@ def calc_tau_s(u, exp=math.exp):
     return tau_s
 
 
-def calc_s_inf(u, exp=math.exp):
+def calc_s_inf(u):
     """Calculates the steady-state value of the gating variable s for the transient outward potassium current.
     
     Parameters
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -735,7 +723,7 @@ def calc_s_inf(u, exp=math.exp):
     return s_inf
 
 
-def calc_ito(u, r, s, Ek, gto, exp=math.exp):
+def calc_ito(u, r, s, Ek, gto):
     """
     Calculates the transient outward current.
     
@@ -759,7 +747,7 @@ def calc_ito(u, r, s, Ek, gto, exp=math.exp):
     return gto*r*s*(u-Ek)
 
 
-def calc_xr1_inf(u, exp=math.exp):
+def calc_xr1_inf(u):
     """Calculates the steady-state value of the gating variable xr1 
     for the rapid delayed rectifier potassium current.
 
@@ -767,8 +755,6 @@ def calc_xr1_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -780,7 +766,7 @@ def calc_xr1_inf(u, exp=math.exp):
     return xr1_inf
 
 
-def calc_tau_xr1(u, exp=math.exp):
+def calc_tau_xr1(u):
     """Calculates the time constant for the gating variable xr1 
     for the rapid delayed rectifier potassium current.
     
@@ -788,8 +774,6 @@ def calc_tau_xr1(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
 
     Returns
     -------
@@ -803,7 +787,7 @@ def calc_tau_xr1(u, exp=math.exp):
     return tau_xr1
 
 
-def calc_xr2_inf(u, exp=math.exp):
+def calc_xr2_inf(u):
     """Calculates the steady-state value of the gating variable xr2 
     for the rapid delayed rectifier potassium current.
 
@@ -811,8 +795,6 @@ def calc_xr2_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -824,7 +806,7 @@ def calc_xr2_inf(u, exp=math.exp):
     return xr2_inf
 
 
-def calc_tau_xr2(u, exp=math.exp):
+def calc_tau_xr2(u):
     """Calculates the time constant for the gating variable xr2 
     for the rapid delayed rectifier potassium current.
 
@@ -832,8 +814,6 @@ def calc_tau_xr2(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -847,7 +827,7 @@ def calc_tau_xr2(u, exp=math.exp):
     return tau_xr2
 
 
-def calc_ikr(u, xr1, xr2, Ek, gkr, ko, exp=math.exp, sqrt=math.sqrt):
+def calc_ikr(u, xr1, xr2, Ek, gkr, ko):
     """
     Calculates the rapid delayed rectifier potassium current.
 
@@ -873,7 +853,7 @@ def calc_ikr(u, xr1, xr2, Ek, gkr, ko, exp=math.exp, sqrt=math.sqrt):
     return gkr*sqrt(ko/5.4)*xr1*xr2*(u-Ek)
 
 
-def calc_xs_inf(u, exp=math.exp):
+def calc_xs_inf(u):
     """Calculates the steady-state value of the gating variable xs 
     for the slow delayed rectifier potassium current.
 
@@ -881,8 +861,6 @@ def calc_xs_inf(u, exp=math.exp):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
     
     Returns
     -------
@@ -894,7 +872,7 @@ def calc_xs_inf(u, exp=math.exp):
     return xs_inf
 
 
-def calc_tau_xs(u, exp=math.exp, sqrt=math.sqrt):
+def calc_tau_xs(u):
     """Calculates the time constant for the gating variable xs
     for the slow delayed rectifier potassium current.
 
@@ -902,10 +880,6 @@ def calc_tau_xs(u, exp=math.exp, sqrt=math.sqrt):
     ----------
     u : np.ndarray
         Membrane potential array.
-    exp : callable
-        Exponential function to use (default: math.exp).
-    sqrt : callable
-        Square root function to use (default: math.sqrt).
     
     Returns
     -------
@@ -942,7 +916,7 @@ def calc_iks(u, xs, Eks, gks):
 
     return gks*xs*xs*(u-Eks)
 
-def calc_ik1(u, Ek, gk1, exp=math.exp):
+def calc_ik1(u, Ek, gk1):
     """
     Calculates the inward rectifier potassium current.
 
@@ -968,7 +942,7 @@ def calc_ik1(u, Ek, gk1, exp=math.exp):
 
     return gk1*rec_iK1*(u-Ek)
 
-def calc_inaca(u, nao, nai, cao, cai, KmNai, KmCa, knaca, ksat, n_, F, R, T, exp=math.exp):
+def calc_inaca(u, nao, nai, cao, cai, KmNai, KmCa, knaca, ksat, n_, F, R, T):
     """
     Calculates the sodium-calcium exchanger current.
 
@@ -1012,7 +986,7 @@ def calc_inaca(u, nao, nai, cao, cai, KmNai, KmCa, knaca, ksat, n_, F, R, T, exp
             (exp(n_*u*F/(R*T))*nai*nai*nai*cao -
                 exp((n_-1)*u*F/(R*T))*nao*nao*nao*cai*2.5)
 
-def calc_inak(u, nai, ko, KmK, KmNa, knak, F, R, T, exp=math.exp):
+def calc_inak(u, nai, ko, KmK, KmNa, knak, F, R, T):
     """
     Calculates the sodium-potassium pump current.
 
@@ -1069,7 +1043,7 @@ def calc_ipca(cai, KpCa, gpca):
 
     return gpca*cai/(KpCa+cai)
 
-def calc_ipk(u, Ek, gpk, exp=math.exp):
+def calc_ipk(u, Ek, gpk):
     """
     Calculates the potassium pump current.
 
@@ -1242,7 +1216,7 @@ def calc_ixfer(cass, cai, vxfer):
 
     return vxfer*(cass-cai)
 
-def calc_casr(dt, caSR, bufsr, Kbufsr, iup, irel, ileak, sqrt=math.sqrt):
+def calc_casr(dt, caSR, bufsr, Kbufsr, iup, irel, ileak):
     """
     Calculates the calcium concentration in the sarcoplasmic reticulum.
 
@@ -1273,7 +1247,7 @@ def calc_casr(dt, caSR, bufsr, Kbufsr, iup, irel, ileak, sqrt=math.sqrt):
     cjsr = Kbufsr*(CaCSQN+dCaSR+caSR)
     return (sqrt(bjsr*bjsr+4*cjsr)-bjsr)/2
 
-def calc_cass(dt, caSS, bufss, Kbufss, ixfer, irel, ical, capacitance, Vc, Vss, Vsr, inversevssF2, sqrt=math.sqrt):
+def calc_cass(dt, caSS, bufss, Kbufss, ixfer, irel, ical, capacitance, Vc, Vss, Vsr, inversevssF2):
     """
     Calculates the calcium concentration in the submembrane space.
 
@@ -1316,7 +1290,7 @@ def calc_cass(dt, caSS, bufss, Kbufss, ixfer, irel, ical, capacitance, Vc, Vss, 
     ccss = Kbufss*(CaSSBuf+dCaSS+caSS)
     return (sqrt(bcss*bcss+4*ccss)-bcss)/2
 
-def calc_cai(dt, cai, bufc, Kbufc, ibca, ipca, inaca, iup, ileak, ixfer, capacitance, vsr, vc, inverseVcF2, sqrt=math.sqrt):
+def calc_cai(dt, cai, bufc, Kbufc, ibca, ipca, inaca, iup, ileak, ixfer, capacitance, vsr, vc, inverseVcF2):
     """
     Calculates the calcium concentration in the cytosol.
 
