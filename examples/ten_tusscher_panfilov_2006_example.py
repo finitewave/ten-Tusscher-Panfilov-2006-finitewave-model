@@ -11,17 +11,19 @@ import matplotlib.pyplot as plt
 from implementation.ten_tusscher_panfilov_2006 import tenTusscherPanfilov20060D, Stimulation
 
 
-stimulations = [Stimulation(t_start=0.1, duration=1, amplitude=100.0)]
-t_max = 400.0
+stimulations = [Stimulation(t_start=100, duration=1., amplitude=30.0)]
+t_max = 600.0
 
 model = tenTusscherPanfilov20060D(dt=0.01, stimulations=stimulations)
 model.run(t_max=t_max)
 
-time = np.arange(0, t_max, model.dt)
-plt.plot(time, model.history['u'])
+
+fig = plt.figure(figsize=(10, 5))
+plt.plot(model.times, model.history['u'], lw=2)
 plt.xlabel('Time (ms)')
 plt.ylabel('Membrane Potential (u)')
 plt.title('0D Model Simulation')
 plt.grid()
 plt.show()
 
+# fig.savefig("ten_tusscher_panfilov_2006_ap.png", dpi=300)
