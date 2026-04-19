@@ -20,6 +20,8 @@ DOI: 10.1152/ajpheart.00109.2006
 python -m examples.ten_tusscher_panfilov_2006_example
 ```
 
+![Alt text](ten_tusscher_panfilov_2006_ap.png)
+
 ### How to test
 ```bash
 python -m pytest -q
