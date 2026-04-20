@@ -18,7 +18,7 @@ model = tenTusscherPanfilov20060D(dt=0.01, stimulations=stimulations)
 model.run(t_max=t_max)
 
 
-fig = plt.figure(figsize=(10, 5))
+# fig = plt.figure()
 plt.plot(model.times, model.history['u'], lw=2)
 plt.xlabel('Time (ms)')
 plt.ylabel('Membrane Potential (u)')
