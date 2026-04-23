@@ -18,8 +18,10 @@ https://doi.org/10.1152/ajpheart.00109.2006
 """
 
 __all__ = (
+    "get_diffusion_coefficient",
     "get_variables",
     "get_parameters",
+    "ionic_step",
     "calc_rhs",  
     "calc_where",
     "calc_gating_variable_rush_larsen",
@@ -75,6 +77,13 @@ __all__ = (
 )
 
 from math import exp, log, sqrt
+
+
+def get_diffusion_coefficient() -> float:
+    """
+    Returns the diffusion coefficient for spatial propagation in the model.
+    """
+    return {"D_model": 0.154}
 
 
 def get_variables() -> dict[str, float]:
