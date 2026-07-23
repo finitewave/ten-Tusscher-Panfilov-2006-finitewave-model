@@ -86,8 +86,7 @@ class tenTusscherPanfilov20060D:
             Current time step index.
         """
         res = ops.ionic_step(self.dt, **self.variables, **self.parameters)
-        (rhs, cai_new, casr_new, cass_new, nai_new, ki_new, m_new, h_new, j_new,
-         xr1_new, xr2_new, xs_new, r_new, s_new, d_new, f_new, f2_new, fcass_new, rr_new) = res
+        (rhs, m_new, h_new, j_new, xr1_new, xs_new, s_new, f_new, f2_new) = res
 
         
         stim_curr = self.dt * sum(stim.stim(t=self.dt*i) for stim in self.stimulations)
@@ -99,25 +98,11 @@ class tenTusscherPanfilov20060D:
         self.variables["m"] = m_new
         self.variables["h"] = h_new
         self.variables["j"] = j_new
-
-        self.variables["d"] = d_new
         self.variables["f"] = f_new
         self.variables["f2"] = f2_new
-        self.variables["fcass"] = fcass_new
-
-        self.variables["r"] = r_new
         self.variables["s"] = s_new
         self.variables["xr1"] = xr1_new
-        self.variables["xr2"] = xr2_new
         self.variables["xs"] = xs_new
-
-        self.variables["rr"] = rr_new
-
-        self.variables["casr"] = casr_new
-        self.variables["cass"] = cass_new
-        self.variables["cai"] = cai_new
-        self.variables["nai"] = nai_new
-        self.variables["ki"] = ki_new
 
     def run(self, t_max: float):
         """
