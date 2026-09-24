@@ -168,6 +168,8 @@ def get_parameters() -> dict[str, float]:
         "Kbufsr": 0.3,
         "Bufss": 0.4,
         "Kbufss": 0.00025,
+        "tau_f_inact_scale": 1.0,  # Scaling factor for tau_f when u > 0 mV
+        "tau_j_scale": 1.0,        # Scaling factor for tau_j
     }
 
 
@@ -176,7 +178,8 @@ def ionic_step(dt, u, cai, casr, cass, nai, ki, m, h, j, xr1, xr2, xs, r, s, d,
                Bufsr, Kbufsr, Bufss, Kbufss, Vmaxup, Kup, Vrel, k1, k2, k3, k4,
                EC, maxsr, minsr, Vleak, Vxfer, R, F, T, Cm,
                gKr, gKs, gK1, gto, gNa, gbNa, gCaL, gbCa, gpCa, KpCa, gpK, pKNa,
-               KmK, KmNa, pNaK, kNaCa, KmNai, KmCa, ksat, gamma, alpha):
+               KmK, KmNa, pNaK, kNaCa, KmNai, KmCa, ksat, gamma, alpha,
+               tau_f_inact_scale, tau_j_scale):
     """
     Perform a single time step update.
 
@@ -240,7 +243,7 @@ def ionic_step(dt, u, cai, casr, cass, nai, ki, m, h, j, xr1, xr2, xs, r, s, d,
     h_new = calc_gating_variable_rush_larsen(h, h_inf, tau_h, dt)
 
     j_inf = h_inf
-    tau_j = calc_tau_j(u)
+    tau_j = calc_tau_j(u, tau_j_scale)
     j_new = calc_gating_variable_rush_larsen(j, j_inf, tau_j, dt)
     
     ina = calc_ina(u, m, h, j, gNa, Ena)
@@ -250,7 +253,7 @@ def ionic_step(dt, u, cai, casr, cass, nai, ki, m, h, j, xr1, xr2, xs, r, s, d,
     d_new = calc_gating_variable_rush_larsen(d, d_inf, tau_d, dt)
 
     f_inf = calc_f_inf(u)
-    tau_f = calc_tau_f(u)
+    tau_f = calc_tau_f(u, tau_f_inact_scale)
     f_new = calc_gating_variable_rush_larsen(f, f_inf, tau_f, dt)
 
     f2_inf = calc_f2_inf(u)
@@ -596,7 +599,7 @@ def calc_tau_h(u):
     return tau_h
 
 
-def calc_tau_j(u):
+def calc_tau_j(u, tau_j_scale):
     """
     Calculates the time constant for the gating variable j for the fast sodium current.
 
@@ -604,6 +607,8 @@ def calc_tau_j(u):
     ----------
     u : np.ndarray
         Membrane potential array.
+    tau_j_scale : float
+        Scaling factor for the time constant of the gating variable j.
 
     Returns
     -------
@@ -623,7 +628,8 @@ def calc_tau_j(u):
     beta_j = calc_where(u >= -40.,
                         0.6 * exp(0.057 * u) / (1 + exp(-0.1 * (u + 32))),
                         0.02424 * exp(-0.01052 * u) / (1 + exp(-0.1378 * (u + 40.14))))
-    tau_j = 1.0 / (alpha_j + beta_j)
+    tau_j = tau_j_scale / (alpha_j + beta_j)
+    
     return tau_j
 
 
@@ -696,13 +702,15 @@ def calc_d_inf(u):
     return d_inf
 
 
-def calc_tau_f(u):
+def calc_tau_f(u, tau_f_inact_scale):
     """
     Calculates the time constant for the gating variable f for the L-type calcium current.
     Parameters
     ----------
     u : np.ndarray
         Membrane potential array.
+    tau_f_inact_scale : float
+        Scaling factor for `u > 0 mV`.
 
     Returns
     -------
@@ -714,6 +722,7 @@ def calc_tau_f(u):
     Bf = 200. / (1. + exp((13. -  u) / 10.))
     Cf = (180. / (1. + exp((u + 30.) / 10.))) + 20.
     tau_f = Af + Bf + Cf
+    tau_f = calc_where(u > 0, tau_f_inact_scale * tau_f, tau_f)
     return tau_f
 
 
